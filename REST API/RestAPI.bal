@@ -39,7 +39,9 @@ isolated service /api on new http:Listener(9090) {
             select staff;
     }
 
+    // Retrieve the details of a specific lecturer by their office number.
      resource isolated function get office/[string office_number]() returns Lecturers[]|error{
+    
         do{
            stream<Lecturers,sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
            return from Lecturers offices in lecturer_office
@@ -49,6 +51,7 @@ isolated service /api on new http:Listener(9090) {
             return error(e.message());
         }
      }   
+     //Retrieve all office
         resource isolated function get offices() returns Office[]|error
         {
             stream<Office, sql:Error?> office = db->query(`SELECT * FROM Office`);
