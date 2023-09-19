@@ -11,6 +11,18 @@ type Staff record
     string staffName;
     string title;
 };
+type Office record{
+    string office_number;
+    string location;
+    int capcity;
+    string lecturer;
+};
+
+type Lecturers record{
+    string name;
+    string course;
+    string office_number;
+};
 
 final mysql:Client db = check new (
     host = "first-instance.cg4vktva35w7.eu-north-1.rds.amazonaws.com",
@@ -26,4 +38,26 @@ isolated service /api on new http:Listener(9090) {
         return from Staff staff in streams
             select staff;
     }
-}
+
+     resource isolated function get office/[string office_number]() returns Lecturers[]|error{
+        do{
+           stream<Lecturers,sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
+           return from Lecturers offices in lecturer_office
+            select offices;
+        }
+        on fail var e {
+            return error(e.message());
+        }
+     }   
+        resource isolated function get offices() returns Office[]|error
+        {
+            stream<Office, sql:Error?> office = db->query(`SELECT * FROM Office`);
+            return from Office user in office
+                select user;
+        }
+        
+    }
+
+    
+     
+
