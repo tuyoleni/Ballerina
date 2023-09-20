@@ -33,15 +33,15 @@ final mysql:Client db = check new (
 );
 
 isolated service /api on new http:Listener(9000) {
-    //Retrieve the details of a specific lecturer by their staff number.
+    //Retrieve the details of a specific lecturer by their staff number.(Simeon)
     resource isolated function get lecturers/[string staffNumber]() returns Staff[]|error {
         stream<Staff, sql:Error?> staffs = db->query(`select * from Staff where staffNumber = ${staffNumber}`);
         return from Staff staff in staffs
             select staff;
     }
 
-    // Retrieve the details of a specific lecturer by their office number.
-    resource isolated function get office/[string office_number]() returns Lecturers[]|error {
+    // Retrieve all the lecturers that sit in the same office.(Barkias)
+    resource isolated function get lecturer/[string office_number]() returns Lecturers[]|error {
 
         do {
             stream<Lecturers, sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
@@ -60,7 +60,7 @@ isolated service /api on new http:Listener(9000) {
         return from Office user in office
             select user;
     }
-    //Retrieve a list of all lecturers withtin the faculty
+    //Retrieve a list of all lecturers withtin the faculty (Patrick)
     resource isolated function get lecturer() returns Staff[]|error {
         stream<Staff, sql:Error?> staffStream = db->query(`SELECT * FROM Staff WHERE title = "lecturer"`);
         return from Staff staff in staffStream
