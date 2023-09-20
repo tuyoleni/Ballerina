@@ -60,6 +60,7 @@ isolated service /api on new http:Listener(9000) {
         return from Office user in office
             select user;
     }
+
     //Retrieve a list of all lecturers withtin the faculty (Patrick)
     resource isolated function get lecturer() returns Staff[]|error {
         stream<Staff, sql:Error?> staffStream = db->query(`SELECT * FROM Staff WHERE title = "lecturer"`);
@@ -67,7 +68,7 @@ isolated service /api on new http:Listener(9000) {
             select staff;
     }
 
-    //Delete Lecturer by staffNumber
+    //Delete Lecturer by staffNumber (Patrick)
     resource isolated function delete lecturer/[string staffNumber]() returns http:NoContent|error
     {
         _ = check db->execute(`DELETE FROM Staff WHERE staffNumber = ${staffNumber}`);
