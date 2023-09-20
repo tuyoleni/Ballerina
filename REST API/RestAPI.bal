@@ -53,13 +53,13 @@ isolated service /api on new http:Listener(9000) {
         }
     }
 
-    //Retrieve all office
-    resource isolated function get offices() returns Office[]|error
-        {
-        stream<Office, sql:Error?> office = db->query(`SELECT * FROM Office`);
-        return from Office user in office
-            select user;
-    }
+    // //Retrieve all office
+    // resource isolated function get offices() returns Office[]|error
+    //     {
+    //     stream<Office, sql:Error?> office = db->query(`SELECT * FROM Office`);
+    //     return from Office user in office
+    //         select user;
+    // }
 
     //Retrieve a list of all lecturers withtin the faculty (Patrick)
     resource isolated function get lecturer() returns Staff[]|error {
