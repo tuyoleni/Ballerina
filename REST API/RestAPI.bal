@@ -11,14 +11,15 @@ type Staff record
     string staffName;
     string title;
 };
-type Office record{
+
+type Office record {
     string office_number;
     string location;
     int capcity;
     string lecturer;
 };
 
-type Lecturers record{
+type Lecturers record {
     string name;
     string course;
     string office_number;
@@ -31,38 +32,39 @@ final mysql:Client db = check new (
     database = "bal_db"
 );
 
-isolated service /api on new http:Listener(9090) {
+isolated service /api on new http:Listener(9000) {
     //Retrieve the details of a specific lecturer by their staff number.
     resource isolated function get lecturers/[string staffNumber]() returns Staff[]|error {
-        stream<Staff, sql:Error?> streams = db->query(`select * from Staff where staffNumber = ${staffNumber}`);
-        return from Staff staff in streams
+        stream<Staff, sql:Error?> staffs = db->query(`select * from Staff where staffNumber = ${staffNumber}`);
+        return from Staff staff in staffs
             select staff;
     }
 
     // Retrieve the details of a specific lecturer by their office number.
-     resource isolated function get office/[string office_number]() returns Lecturers[]|error{
-    
-        do{
-           stream<Lecturers,sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
-           return from Lecturers offices in lecturer_office
-            select offices;
+    resource isolated function get office/[string office_number]() returns Lecturers[]|error {
+
+        do {
+            stream<Lecturers, sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
+            return from Lecturers offices in lecturer_office
+                select offices;
         }
         on fail var e {
             return error(e.message());
         }
-     }   
-     //Retrieve all office
-        resource isolated function get offices() returns Office[]|error
+    }
+
+    //Retrieve all office
+    resource isolated function get offices() returns Office[]|error
         {
-            stream<Office, sql:Error?> office = db->query(`SELECT * FROM Office`);
-            return from Office user in office
-                select user;
-        }
-     //Retrieve a list of all lecturers withtin the faculty
-   resource isolated function get staff() returns Staff[]|error {
-    stream<Staff, sql:Error?> staffStream = db->query(`SELECT * FROM Staff WHERE title = "lecturer"`);
-    return from Staff staff in staffStream
-        select staff;
+        stream<Office, sql:Error?> office = db->query(`SELECT * FROM Office`);
+        return from Office user in office
+            select user;
+    }
+    //Retrieve a list of all lecturers withtin the faculty
+    resource isolated function get lecturer() returns Staff[]|error {
+        stream<Staff, sql:Error?> staffStream = db->query(`SELECT * FROM Staff WHERE title = "lecturer"`);
+        return from Staff staff in staffStream
+            select staff;
     }
 
     //Delete Lecturer by staffNumber
@@ -71,4 +73,4 @@ isolated service /api on new http:Listener(9090) {
         _ = check db->execute(`DELETE FROM Staff WHERE staffNumber = ${staffNumber}`);
         return http:NO_CONTENT;
     }
-    }
+}
