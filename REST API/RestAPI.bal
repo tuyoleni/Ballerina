@@ -82,7 +82,7 @@ isolated service /api on new http:Listener(9000) {
 
 
 
-//Retrieve all lecturers that teach a crtain course (Linda)
+//Retrieve all lecturers that teach a crtain course(Linda)
     resource isolated function get staff/[string staffNumber]() returns LecturerAndCourses[]|error
 {
         stream<LecturerAndCourses, sql:Error?> streamName = db->query(`SELECT
@@ -100,7 +100,14 @@ WHERE
             select staff;
     };
 
-
-
+//addinfg a new lecturer(Linda)
+resource isolated function post lecturer(Staff lecture) returns Staff|error{ 
+    do{
+        _=check db->execute (`insert into Staff(staffNumber, officeNumber, staffName, title)
+                            values(${lecture.staffNumber}, ${lecture.officeNumber}, ${lecture.staffName}, ${lecture.title}`)
+    }on fail var Linda{
+        return error(Linda.message())
+    }return lecture;
+}
     
 }
