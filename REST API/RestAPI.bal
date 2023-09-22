@@ -24,6 +24,11 @@ type Lecturers record {
     string course;
     string office_number;
 };
+type LectureAndCourses record{
+    string staffNumber;
+    string officeNumber;
+    string staffName;
+};
 
 final mysql:Client db = check new (
     host = "first-instance.cg4vktva35w7.eu-north-1.rds.amazonaws.com",
@@ -74,4 +79,28 @@ isolated service /api on new http:Listener(9000) {
         _ = check db->execute(`DELETE FROM Staff WHERE staffNumber = ${staffNumber}`);
         return http:NO_CONTENT;
     }
+
+
+
+//Retrieve all lecturers that teach a crtain course (Linda)
+    resource isolated function get staff/[string staffNumber]() returns LecturerAndCourses[]|error
+{
+        stream<LecturerAndCourses, sql:Error?> streamName = db->query(`SELECT
+    Lecturer_Course.*,
+    Staff.*,
+    Courses.courseName,
+    Courses.NQFLevel
+FROM Lecturer_Course
+    INNER JOIN Staff ON Lecturer_Course.staffNumber = Staff.staffNumber
+    INNER JOIN Courses ON Lecturer_Course.courseCode = Courses.courseCode
+WHERE
+    Lecturer_Course.staffNumber = ${staffNumber}`);
+
+        return from LecturerAndCourses staff in streamName
+            select staff;
+    };
+
+
+
+    
 }
