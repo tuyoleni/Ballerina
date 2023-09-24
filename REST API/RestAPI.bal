@@ -19,12 +19,6 @@ type Office record {
     string lecturer;
 };
 
-type Lecturers record {
-    string name;
-    string course;
-    string office_number;
-};
-
 type LecturerAndCourses record {
     string staffNumber;
     string officeNumber;
@@ -47,11 +41,11 @@ isolated service /api on new http:Listener(9000) {
     }
 
     // Retrieve all the lecturers that sit in the same office.(Barkias)
-    resource isolated function get lecturer/[string office_number]() returns Lecturers[]|error {
+    resource isolated function get lecturer/[string office_number]() returns Staff[]|error {
 
         do {
-            stream<Lecturers, sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
-            return from Lecturers offices in lecturer_office
+            stream<Staff, sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
+            return from Staff offices in lecturer_office
                 select offices;
         }
         on fail var e {
@@ -81,19 +75,20 @@ isolated service /api on new http:Listener(9000) {
         return http:NO_CONTENT;
     }
 
-    //Retrieve all lecturers that teach a crtain course(Linda)
-    resource isolated function get staff/[string staffNumber]() returns LecturerAndCourses[]|error
+    //Retrieve all lecturers that teach a certain course(Linda)
+    resource isolated function get staff/[string courseCode]() returns LecturerAndCourses[]|error
     {
         stream<LecturerAndCourses, sql:Error?> streamName = db->query(`SELECT
         Lecturer_Course.*,
-        Staff.*,
+        Staff.officeNumber,
+        Staff.staffName,
         Courses.courseName,
         Courses.NQFLevel
         FROM Lecturer_Course
         INNER JOIN Staff ON Lecturer_Course.staffNumber = Staff.staffNumber
         INNER JOIN Courses ON Lecturer_Course.courseCode = Courses.courseCode
         WHERE
-        Lecturer_Course.staffNumber = ${staffNumber}`);
+        Lecturer_Course.courseCode = ${courseCode}`);
 
         return from LecturerAndCourses staff in streamName
             select staff;
@@ -109,5 +104,4 @@ isolated service /api on new http:Listener(9000) {
         }
         return lecture;
     }
-
 }
