@@ -1,0 +1,122 @@
+syntax = "proto3";
+package Library;
+
+
+//Definitions for a Book
+message Book {
+  string isbn = 1;
+  string title = 2;
+  string author = 3;
+  string location = 4;
+  enum Status {
+    Available = 0;
+    CheckedOut = 1;
+  }
+  Status status = 5;
+}
+
+//Definaton for a Borrowed Book
+message BorrowedBook {
+  int32 userId = 2;
+  string isbn = 3;
+}
+
+//Definaton for a User
+message User {
+  int32 userId = 1;
+  string name = 2;
+  enum UserType {
+    Student = 0;
+    Librarian = 1;
+  }
+  UserType userType = 3;
+  string contact = 4;
+}
+
+// Request and response for adding a book
+message AddBookRequest {
+  Book book = 1;
+}
+  
+message AddBookResponse {
+  string isbn = 1;
+}
+
+
+
+// Request and Response for borrowing a book
+message BorrowBookRequest {
+  int32 userId = 1;
+  string isbn = 2;
+}
+
+message BorrowBookResponse {
+  BorrowedBook borrowedBook = 1;
+}
+
+
+
+// Request for creating users (streamed) and response
+message CreateUsersRequest {
+  repeated User users = 1;
+}
+
+message CreateUsersResponse {
+  CreateUsersRequest users = 1;
+}
+
+
+
+// Request and response for updating a book
+message UpdateBookRequest {
+  string isbn = 1;
+  Book book = 2;
+}
+
+message UpdateBookResponse {
+  UpdateBookRequest updatedBook = 1;
+}
+
+
+
+// Request and response for removing a book
+message RemoveBookRequest {
+  string isbn = 1;
+}
+
+message RemoveBookResponse {
+  repeated Book updatedBooks = 1;
+}
+
+
+
+// Request and response for listing available books
+message ListAvailableBooksRequest {}
+
+message ListAvailableBooksResponse {
+  repeated Book availableBooks = 1;
+}
+
+
+
+// Request and response for locating a book by ISBN
+message LocateBookRequest {
+  string isbn = 1;
+}
+
+message LocateBookResponse {
+  string location = 1;
+  bool available = 2;
+}
+
+
+// Define the library service
+service LibraryService {
+  rpc AddBook(AddBookRequest) returns (AddBookResponse);
+  rpc CreateUsers(stream CreateUsersRequest) returns (CreateUsersResponse);
+  rpc UpdateBook(UpdateBookRequest) returns (UpdateBookResponse);
+  rpc RemoveBook(RemoveBookRequest) returns (RemoveBookResponse);
+  rpc ListAvailableBooks(ListAvailableBooksRequest) returns (ListAvailableBooksResponse);
+  rpc LocateBook(LocateBookRequest) returns (LocateBookResponse);
+  rpc BorrowBook(BorrowBookRequest) returns (BorrowBookResponse);
+}
