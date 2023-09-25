@@ -24,7 +24,8 @@ type Lecturers record {
     string course;
     string office_number;
 };
-type LectureAndCourses record{
+
+type LectureAndCourses record {
     string staffNumber;
     string officeNumber;
     string staffName;
@@ -58,14 +59,6 @@ isolated service /api on new http:Listener(9000) {
         }
     }
 
-    // //Retrieve all office
-    // resource isolated function get offices() returns Office[]|error
-    //     {
-    //     stream<Office, sql:Error?> office = db->query(`SELECT * FROM Office`);
-    //     return from Office user in office
-    //         select user;
-    // }
-
     //Retrieve a list of all lecturers withtin the faculty (Patrick)
     resource isolated function get lecturer() returns Staff[]|error {
         stream<Staff, sql:Error?> staffStream = db->query(`SELECT * FROM Staff WHERE title = "lecturer"`);
@@ -80,34 +73,32 @@ isolated service /api on new http:Listener(9000) {
         return http:NO_CONTENT;
     }
 
+    //Retrieve all lecturers that teach a crtain course(Linda)
+    resource isolated function get staff/[string staffNumber]() returns LectureAndCourses[]|error {
+        stream<LectureAndCourses, sql:Error?> streamName = db->query(`SELECT
+        Lecturer_Course.*,
+        Staff.*,
+        Courses.courseName,
+        Courses.NQFLevel
+        FROM Lecturer_Course
+        INNER JOIN Staff ON Lecturer_Course.staffNumber = Staff.staffNumber
+        INNER JOIN Courses ON Lecturer_Course.courseCode = Courses.courseCode
+        WHERE
+        Lecturer_Course.staffNumber = ${staffNumber}`);
 
+        return from LectureAndCourses staff in streamName
+            select staff;
+    };
 
-//Retrieve all lecturers that teach a crtain course(Linda)
-    resource isolated function get staff/[string staffNumber]() returns LecturerAndCourses[]|error
-{
-        stream<LecturerAndCourses, sql:Error?> streamName = db->query(`SELECT
-    Lecturer_Course.*,
-    Staff.*,
-    Courses.courseName,
-    Courses.NQFLevel
-FROM Lecturer_Course
-    INNER JOIN Staff ON Lecturer_Course.staffNumber = Staff.staffNumber
-    INNER JOIN Courses ON Lecturer_Course.courseCode = Courses.courseCode
-WHERE
-    Lecturer_Course.staffNumber = ${staffNumber}`);
+    //addinfg a new lecturer(Linda)
+    resource isolated function post lecturer(Staff lecture) returns Staff|error {
+        do {
+            _ = check db->execute(`insert into Staff(staffNumber, officeNumber, staffName, title)
+                            values(${lecture.staffNumber}, ${lecture.officeNumber}, ${lecture.staffName}, ${lecture.title}`);
+        } on fail var Linda {
+            return error(Linda.message());
+        }
+        return lecture;
+    }
 
-        return from LecturerAndCourses staff in streamName
-           select staff;
-    };
-
-//addinfg a new lecturer(Linda)
-resource isolated function post lecturer(Staff lecture) returns Staff|error{ 
-    do{
-        _=check db->execute (`insert into Staff(staffNumber, officeNumber, staffName, title)
-                            values(${lecture.staffNumber}, ${lecture.officeNumber}, ${lecture.staffName}, ${lecture.title}`)
-    }on fail var Linda{
-        return error(Linda.message())
-    }return lecture;
-}
-    
 }
