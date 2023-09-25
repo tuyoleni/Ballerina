@@ -62,10 +62,15 @@ service "LibraryService" on ep {
     }
 
     remote function BorrowBook(BorrowBookRequest value) returns BorrowBookResponse|error {
+        _ = check libraryClient->execute(`INSERT INTO Borrowed_Books (UserID, ISBN) VALUES (${value.userId}, ${value.isbn})`);
+        _ = check libraryClient->execute(`UPDATE Books SET Status = 'CheckedOut' WHERE ISBN = ${value.isbn}`);
+        BorrowBookResponse response = {
+            borrowedBook: value
+        };
+        return response;
     }
 
     //create users (Linda)
-
     remote function CreateUsers(stream<CreateUsersRequest, grpc:Error?> clientStream) returns CreateUsersResponse|error {
         CreateUsersRequest[] data = [];
         CreateUsersResponse response = {};
