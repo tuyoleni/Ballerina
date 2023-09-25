@@ -26,6 +26,19 @@ service "LibraryService" on ep {
     }
 
     remote function UpdateBook(UpdateBookRequest value) returns UpdateBookResponse|error {
+        var data = {
+                ISBN: value.book.isbn,
+                Title: value.book.title,
+                Author: value.book.author,
+                Location: value.book.location,
+                Status: value.book.status
+                };
+                _ = check libraryClient->execute(`UPDATE Books SET Title =  ${data.Title}, Author = ${data.Author}, Location = ${data.Location}, Status = ${data.Status} WHERE ISBN=${data.ISBN}`);
+                UpdateBookResponse response = {
+                    updatedBook: value
+                };
+                return response;
+        
     }
 
     //Remove Books(Linda)
@@ -59,6 +72,26 @@ service "LibraryService" on ep {
     }
 
     remote function LocateBook(LocateBookRequest value) returns LocateBookResponse|error {
+        LocateBookResponse response = {};
+        stream<Book, sql:Error?> bookStream = libraryClient->query(`SELECT Location, Status FROM Books WHERE ISBN = ${value.isbn}`);
+        check from Book book in bookStream
+            do {
+                if (book.status == "Available") {
+                    response = {
+                        location: book.location,
+                        available: true
+                    };
+                }
+                if (book.status != "Available") {
+
+                    response = {
+                        location: book.location,
+                        available: false
+                    };
+                }
+                io:println(book.status);
+            };
+        return response;
     }
 
     //Borrow Book request(Simeon)
