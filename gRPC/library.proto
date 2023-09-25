@@ -43,7 +43,6 @@ message AddBookResponse {
 }
 
 
-
 // Request and Response for borrowing a book
 message BorrowBookRequest {
   int32 userId = 1;
@@ -55,16 +54,13 @@ message BorrowBookResponse {
 }
 
 
-
 // Request for creating users (streamed) and response
 message CreateUsersRequest {
   repeated User users = 1;
 }
-
 message CreateUsersResponse {
   CreateUsersRequest users = 1;
 }
-
 
 
 // Request and response for updating a book
@@ -76,7 +72,6 @@ message UpdateBookRequest {
 message UpdateBookResponse {
   UpdateBookRequest updatedBook = 1;
 }
-
 
 
 // Request and response for removing a book
