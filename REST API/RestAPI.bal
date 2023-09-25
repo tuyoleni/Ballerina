@@ -19,7 +19,12 @@ type Office record {
     string lecturer;
 };
 
-type LecturerAndCourses record {
+type Lecturers record {
+    string name;
+    string course;
+    string office_number;
+};
+type LectureAndCourses record{
     string staffNumber;
     string officeNumber;
     string staffName;
@@ -39,26 +44,13 @@ isolated service /api on new http:Listener(9000) {
         return from Staff staff in staffs
             select staff;
     }
-    // Update a lecturer that sit in the same office.(Barkias)
-    
-    
-        resource isolated function put lecturer(Staff lecture) returns Staff|error {
-            do {
-                _ = check db->execute(`Update Staff SET staffNumber = ${lecture.staffNumber}, officeNumber = ${lecture.officeNumber} staffName = ${lecture.staffName}, title = ${lecture.title} Where staffNumber = ${lecture.staffNumber}`);
-                                
-            } on fail var t_error{
-                return error(t_error.message());
-            }
-            return lecture;
-        }
-
 
     // Retrieve all the lecturers that sit in the same office.(Barkias)
-    resource isolated function get lecturer/[string office_number]() returns Staff[]|error {
+    resource isolated function get lecturer/[string office_number]() returns Lecturers[]|error {
 
         do {
-            stream<Staff, sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
-            return from Staff offices in lecturer_office
+            stream<Lecturers, sql:Error?> lecturer_office = db->query(`SELECT * FROM Staff WHERE  officeNumber = ${office_number}`);
+            return from Lecturers offices in lecturer_office
                 select offices;
         }
         on fail var e {
@@ -88,33 +80,34 @@ isolated service /api on new http:Listener(9000) {
         return http:NO_CONTENT;
     }
 
-    //Retrieve all lecturers that teach a certain course(Linda)
-    resource isolated function get staff/[string courseCode]() returns LecturerAndCourses[]|error
-    {
-        stream<LecturerAndCourses, sql:Error?> streamName = db->query(`SELECT
-        Lecturer_Course.*,
-        Staff.officeNumber,
-        Staff.staffName,
-        Courses.courseName,
-        Courses.NQFLevel
-        FROM Lecturer_Course
-        INNER JOIN Staff ON Lecturer_Course.staffNumber = Staff.staffNumber
-        INNER JOIN Courses ON Lecturer_Course.courseCode = Courses.courseCode
-        WHERE
-        Lecturer_Course.courseCode = ${courseCode}`);
 
-        return from LecturerAndCourses staff in streamName
-            select staff;
-    };
 
-    //addinfg a new lecturer(Linda)
-    resource isolated function post lecturer(Staff lecture) returns Staff|error {
-        do {
-            _ = check db->execute(`insert into Staff(staffNumber, officeNumber, staffName, title)
-                            values(${lecture.staffNumber}, ${lecture.officeNumber}, ${lecture.staffName}, ${lecture.title}`);
-        } on fail var Linda {
-            return error(Linda.message());
-        }
-        return lecture;
-    }
+//Retrieve all lecturers that teach a crtain course(Linda)
+    resource isolated function get staff/[string staffNumber]() returns LecturerAndCourses[]|error
+{
+        stream<LecturerAndCourses, sql:Error?> streamName = db->query(`SELECT
+    Lecturer_Course.*,
+    Staff.*,
+    Courses.courseName,
+    Courses.NQFLevel
+FROM Lecturer_Course
+    INNER JOIN Staff ON Lecturer_Course.staffNumber = Staff.staffNumber
+    INNER JOIN Courses ON Lecturer_Course.courseCode = Courses.courseCode
+WHERE
+    Lecturer_Course.staffNumber = ${staffNumber}`);
+
+        return from LecturerAndCourses staff in streamName
+           select staff;
+    };
+
+//addinfg a new lecturer(Linda)
+resource isolated function post lecturer(Staff lecture) returns Staff|error{ 
+    do{
+        _=check db->execute (`insert into Staff(staffNumber, officeNumber, staffName, title)
+                            values(${lecture.staffNumber}, ${lecture.officeNumber}, ${lecture.staffName}, ${lecture.title}`)
+    }on fail var Linda{
+        return error(Linda.message())
+    }return lecture;
+}
+    
 }
