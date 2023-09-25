@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.7.0"
+distribution-version = "2201.7.2"
 
 [[package]]
 org = "ballerina"
@@ -128,6 +128,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.__internal"},
 	{org = "ballerina", name = "lang.object"}
+]
+modules = [
+	{org = "ballerina", packageName = "lang.int", moduleName = "lang.int"}
 ]
 
 [[package]]
@@ -262,6 +265,7 @@ version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "grpc"},
 	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "lang.int"},
 	{org = "ballerina", name = "protobuf"},
 	{org = "ballerinai", name = "observe"}
 ]
