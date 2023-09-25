@@ -61,6 +61,7 @@ service "LibraryService" on ep {
     remote function LocateBook(LocateBookRequest value) returns LocateBookResponse|error {
     }
 
+    //Borrow Book request(Simeon)
     remote function BorrowBook(BorrowBookRequest value) returns BorrowBookResponse|error {
         _ = check libraryClient->execute(`INSERT INTO Borrowed_Books (UserID, ISBN) VALUES (${value.userId}, ${value.isbn})`);
         _ = check libraryClient->execute(`UPDATE Books SET Status = 'CheckedOut' WHERE ISBN = ${value.isbn}`);
