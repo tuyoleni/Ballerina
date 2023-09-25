@@ -1,4 +1,8 @@
 import ballerina/grpc;
+import ballerinax/mysql;
+import ballerinax/mysql.driver as _;
+import ballerina/sql;
+import ballerina/io;
 
 listener grpc:Listener ep = new (9090);
 
