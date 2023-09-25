@@ -6,27 +6,28 @@ listener grpc:Listener ep = new (9090);
 service "LibraryService" on ep {
 
     remote function AddBook(AddBookRequest value) returns AddBookResponse|error {
-          error? addBook = BookTable.add(value.book);
-
-        if (addBook is error) {
-            return "Could not add Book: " + value.book.isbn;
-        }
+        _ = check libraryClient->execute(`INSERT INTO Books(ISBN, Title, Author, Location, Status)
+             VALUES (${value.book.isbn}, ${value.book.title}, ${value.book.author}, ${value.book.location}, ${value.book.status})`);
         return {isbn: value.book.isbn};
     }
+
     remote function UpdateBook(UpdateBookRequest value) returns UpdateBookResponse|error {
     }
     remote function RemoveBook(RemoveBookRequest value) returns RemoveBookResponse|error {
     }
     remote function ListAvailableBooks(ListAvailableBooksRequest value) returns ListAvailableBooksResponse|error {
-        table<Book> book = from var books in BookTable
-            where books.status === "Available"
-            select books;
-        table<Book> results = book;
-        ListAvailableBooksResponse response = {
-            availableBooks: results.toArray()
-        };
+        ListAvailableBooksResponse response = {};
+        Book[] availableBooks = [];
+        stream<Book, sql:Error?> bookStream = libraryClient->query(`SELECT * FROM Books`);
+        check from Book books in bookStream
+            do {
+                availableBooks.push(books);
+                response = {
+                    availableBooks: availableBooks
+                };
+            };
+
         return response;
-    }
     }
     remote function LocateBook(LocateBookRequest value) returns LocateBookResponse|error {
     }
@@ -36,3 +37,11 @@ service "LibraryService" on ep {
     }
 }
 
+
+
+
+
+
+
+
+    
