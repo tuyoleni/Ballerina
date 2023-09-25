@@ -4,7 +4,7 @@ listener grpc:Listener ep = new (9090);
 
 @grpc:Descriptor {value: LIBRARY_DESC}
 service "LibraryService" on ep {
-
+    //Adding a book
     remote function AddBook(AddBookRequest value) returns AddBookResponse|error {
         _ = check libraryClient->execute(`INSERT INTO Books(ISBN, Title, Author, Location, Status)
              VALUES (${value.book.isbn}, ${value.book.title}, ${value.book.author}, ${value.book.location}, ${value.book.status})`);
@@ -15,6 +15,8 @@ service "LibraryService" on ep {
     }
     remote function RemoveBook(RemoveBookRequest value) returns RemoveBookResponse|error {
     }
+
+    //Listing all the books available
     remote function ListAvailableBooks(ListAvailableBooksRequest value) returns ListAvailableBooksResponse|error {
         ListAvailableBooksResponse response = {};
         Book[] availableBooks = [];
