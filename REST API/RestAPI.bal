@@ -39,6 +39,19 @@ isolated service /api on new http:Listener(9000) {
         return from Staff staff in staffs
             select staff;
     }
+    // Update a lecturer that sit in the same office.(Barkias)
+    
+    
+        resource isolated function put lecturer(Staff lecture) returns Staff|error {
+            do {
+                _ = check db->execute(`Update Staff SET staffNumber = ${lecture.staffNumber}, officeNumber = ${lecture.officeNumber} staffName = ${lecture.staffName}, title = ${lecture.title} Where staffNumber = ${lecture.staffNumber}`);
+                                
+            } on fail var t_error{
+                return error(t_error.message());
+            }
+            return lecture;
+        }
+
 
     // Retrieve all the lecturers that sit in the same office.(Barkias)
     resource isolated function get lecturer/[string office_number]() returns Staff[]|error {
