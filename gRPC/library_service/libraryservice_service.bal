@@ -17,33 +17,25 @@ listener grpc:Listener ep = new (9090);
 service "LibraryService" on ep {
     //Adding a book
     remote function AddBook(AddBookRequest value) returns AddBookResponse|error {
-<<<<<<< HEAD
         _ = check libraryClient->execute(`INSERT INTO Books(ISBN, Title, Author, Location, Status)
              VALUES (${value.book.isbn}, ${value.book.title}, ${value.book.author}, ${value.book.location}, ${value.book.status})`);
-=======
-        error? addBook = BookTable.add(value.book);
-
-        if (addBook is error) {
-            return "Could not add Book: " + value.book.isbn;
-        }
->>>>>>> 67b86cc13e1ed1b8fed1d0b4627fc5efc77de5c4
         return {isbn: value.book.isbn};
     }
 
     remote function UpdateBook(UpdateBookRequest value) returns UpdateBookResponse|error {
         var data = {
-                ISBN: value.book.isbn,
-                Title: value.book.title,
-                Author: value.book.author,
-                Location: value.book.location,
-                Status: value.book.status
-                };
-                _ = check libraryClient->execute(`UPDATE Books SET Title =  ${data.Title}, Author = ${data.Author}, Location = ${data.Location}, Status = ${data.Status} WHERE ISBN=${data.ISBN}`);
-                UpdateBookResponse response = {
-                    updatedBook: value
-                };
-                return response;
-        
+            ISBN: value.book.isbn,
+            Title: value.book.title,
+            Author: value.book.author,
+            Location: value.book.location,
+            Status: value.book.status
+        };
+        _ = check libraryClient->execute(`UPDATE Books SET Title =  ${data.Title}, Author = ${data.Author}, Location = ${data.Location}, Status = ${data.Status} WHERE ISBN=${data.ISBN}`);
+        UpdateBookResponse response = {
+            updatedBook: value
+        };
+        return response;
+
     }
 
     //Remove Books(Linda)
@@ -65,10 +57,6 @@ service "LibraryService" on ep {
         return response;
     }
 
-<<<<<<< HEAD
-    //Listing all the books available
-=======
->>>>>>> 67b86cc13e1ed1b8fed1d0b4627fc5efc77de5c4
     remote function ListAvailableBooks(ListAvailableBooksRequest value) returns ListAvailableBooksResponse|error {
         ListAvailableBooksResponse response = {};
         Book[] availableBooks = [];
@@ -83,10 +71,7 @@ service "LibraryService" on ep {
 
         return response;
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> 67b86cc13e1ed1b8fed1d0b4627fc5efc77de5c4
     remote function LocateBook(LocateBookRequest value) returns LocateBookResponse|error {
         LocateBookResponse response = {};
         stream<Book, sql:Error?> bookStream = libraryClient->query(`SELECT Location, Status FROM Books WHERE ISBN = ${value.isbn}`);
@@ -142,11 +127,3 @@ service "LibraryService" on ep {
     }
 }
 
-
-
-
-
-
-
-
-    
