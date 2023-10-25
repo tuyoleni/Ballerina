@@ -11,7 +11,10 @@ public function main() returns error? {
 
     //all the functions will be used here example the addDepartment function
     //Pass in the parameters from the user input
-    error? department = addDepartment("New Department");
+
+    string inputdata = "Software Engineering";
+
+    error? department = addDepartment(inputdata);
     if department is error {
         return;
     }
@@ -23,6 +26,6 @@ function addDepartment(string departmentname) returns error? {
         addDepartment(newdep:{name:$name})
     }`;
 
-    Response response = check graphClient->execute(addDepartment, {"name": "Test Department"});
+    Response response = check graphClient->execute(addDepartment, {"name": departmentname});
     io:println("Response ", response);
 }
