@@ -9,23 +9,57 @@ graphql:Client graphClient = check new ("localhost:4000/");
 
 public function main() returns error? {
 
-    //all the functions will be used here example the addDepartment function
-    //Pass in the parameters from the user input
+    int id = 111;
+    string name = "Software";
 
-    string inputdata = "Software Engineering";
+    //Adding department
+    error? departmentResult = addDepartment(id, name);
+    if departmentResult is error {
+        return departmentResult;
+    }
 
-    error? department = addDepartment(inputdata);
-    if department is error {
-        return department;
+    // Deleting department
+    error? deleteDepartmentResult = deleteDepartment(id);
+    if (deleteDepartmentResult is error) {
+        return deleteDepartmentResult;
+    }
+
+    // Adding staff
+    error? addstuff = addStaff(123, "John", "Doe", "Software Engineer", "Employee", 456);
+    if (addstuff is error) {
+        return addstuff;
     }
 }
 
-function addDepartment(string departmentname) returns error? {
+// sends a GraphQL mutation to add a department
+function addDepartment(int id, string departmentname) returns error? {
     string addDepartment = string `
-    mutation addDepartment($name:String!){
-        addDepartment(newdep:{name:$name})
+    mutation addDepartment($id:Int!, $name:String!){
+    addDepartment(newdep:{id:$id, name:$name})
     }`;
 
-    Response response = check graphClient->execute(addDepartment, {"name": departmentname});
+    Response response = check graphClient->execute(addDepartment, {"id": id, "name": departmentname});
+    io:println("Response ", response);
+}
+
+// sends a GraphQL mutation to delete a department by its ID
+function deleteDepartment(int departmentID) returns error? {
+    string deleteDepartment = string `
+    mutation deleteDepartment($id: Int!) {
+    deleteDepartment(id: $id)
+    }`;
+
+    Response response = check graphClient->execute(deleteDepartment, {id: departmentID});
+    io:println("Response ", response);
+}
+
+// sends a GraphQL mutation to add a staff
+function addStaff(int id, string name, string surname, string title, string role, int supervisor) returns error? {
+    string addStaffMutation = string `
+    mutation addStaff($id: Int!, $name: String!, $surname: String!, $title: String!, $role: String!, $supervisor: Int!) {
+        addStaff(id: $id, name: $name, surname: $surname, title: $title, role: $role, supervisor: $supervisor)
+    }`;
+
+    Response response = check graphClient->execute(addStaffMutation, {id, name, surname, title, role, supervisor});
     io:println("Response ", response);
 }
