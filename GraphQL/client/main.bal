@@ -56,10 +56,19 @@ function deleteDepartment(int departmentID) returns error? {
 // sends a GraphQL mutation to add a staff
 function addStaff(int id, string name, string surname, string title, string role, int supervisor) returns error? {
     string addStaffMutation = string `
-    mutation addStaff($id: Int!, $name: String!, $surname: String!, $title: String!, $role: String!, $supervisor: Int!) {
-        addStaff(id: $id, name: $name, surname: $surname, title: $title, role: $role, supervisor: $supervisor)
+    mutation addStaff($newStaff: StaffInput!) {
+        addStaff(newstaff: $newStaff)
     }`;
 
-    Response response = check graphClient->execute(addStaffMutation, {id, name, surname, title, role, supervisor});
+    map<json> staffInput = {
+        "id": id,
+        "name": name,
+        "surname": surname,
+        "title": title,
+        "role": role,
+        "supervisor": supervisor
+    };
+
+    Response response = check graphClient->execute(addStaffMutation, {"newStaff": staffInput});
     io:println("Response ", response);
 }
