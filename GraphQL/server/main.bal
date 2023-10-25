@@ -1,63 +1,52 @@
 import ballerina/graphql;
-import ballerinax/mysql;
-import ballerinax/mysql.driver as _;
+import ballerinax/mongodb;
 
 type Department record {
     string name;
 };
 
-//  Connecting to the database
+type DepartmentDetails record {|
+    int id;
+    string username;
+|};
 
-final mysql:Client db = check new (
-    host = "localhost",
-    user = "user", password = "password",
-    port = 3306,
-    database = "ballerina"
-);
+//  Connecting to the database
+mongodb:ConnectionConfig mongoConfig = {
+    connection: {
+        host: "localhost",
+        port: 27017,
+        auth: {
+            username: "",
+            password: ""
+        },
+        options: {
+            sslEnabled: false,
+            serverSelectionTimeout: 5000
+        }
+    },
+    databaseName: "management"
+};
+
+mongodb:Client db = check new (mongoConfig);
+configurable string departmentCollection = "Department";
+configurable string databaseName = "management";
 
 @graphql:ServiceConfig {
     graphiql: {
-        enabled: true
+        enabled: true,
+        path: "/management"
     }
 }
 
 service / on new graphql:Listener(4000) {
-    isolated remote function addDepartment(Department department) returns string|error {
-        _ = check db->execute(`INSERT INTO department (name) VALUES(${department.name})`);
-        return string `${department.name} add successfully`;
+    remote function addDepartment(Department newdep) returns error|string {
+        map<json> doc = <map<json>>newdep.toJson();
+        _ = check db->insert(doc, departmentCollection, "");
+        return string `${newdep.name} added successfully`;
     }
-    resource function get department() returns error|Dep {
-        // stream<Department, sql:Error?> datastream = db->query(`SELECT * FROM department`);
-        // return check from Department data in datastream
-        //     select data;
-        return check get_department();
-    }
-}
-
-function get_department() returns error|Dep {
-    stream<record {}, error?> datastream = db->query(`SELECT * FROM department`);
-    var rec = check datastream.next();
-    if !(rec is ()) {
-        return new Dep(<Department>rec["value"]);
-    } else {
-        return error(string `Query failed`);
-    }
-
-}
-
-service class Dep {
-
-    private Department data;
-
-    function init(Department data) {
-        self.data = data;
-    }
-
-    // isolated resource function get id() returns int {
-    //     return self.data.id;
-    // }
-
-    isolated resource function get name() returns string {
-        return self.data.name;
+    resource function get department(Department x) returns DepartmentDetails[]|error {
+        stream<DepartmentDetails, error?> datastream = check db->find(departmentCollection, databaseName, {id: x.name}, {});
+        return from DepartmentDetails department in datastream
+            select department;
     }
 }
