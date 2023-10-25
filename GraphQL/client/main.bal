@@ -16,7 +16,7 @@ public function main() returns error? {
 
     error? department = addDepartment(inputdata);
     if department is error {
-        return;
+        return department;
     }
 }
 
